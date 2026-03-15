@@ -11,25 +11,24 @@ import org.springframework.security.web.SecurityFilterChain;
 
 
 @Configuration
-public class SecurityBeans {
+public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(
+                        session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/auth/register",
                                 "/auth/login",
-                                "/auth/refresh"
+                                "/auth/register",
+                                "/auth/refresh",
+                                "/auth/logout"
                         ).permitAll()
                         .anyRequest().authenticated()
-                )
-                .build();
+                ).build();
     }
-
     @Bean
     public PasswordEncoder passwordEncoder() {
         return  new BCryptPasswordEncoder(12);

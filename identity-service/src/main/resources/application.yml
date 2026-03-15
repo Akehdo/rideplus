@@ -10,3 +10,9 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+
+jwt:
+  access-secret: access-secret-access-secret-123456
+  refresh-secret: refresh-secret-refresh-secret-123456
+  access-expiration: 3600
+  refresh-expiration: 604800

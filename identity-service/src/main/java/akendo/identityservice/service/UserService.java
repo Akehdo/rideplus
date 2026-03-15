@@ -1,6 +1,7 @@
 package akendo.identityservice.service;
 
 import akendo.identityservice.domain.User;
+import akendo.identityservice.exception.UserAlreadyExistsException;
 import akendo.identityservice.exception.UserNotFoundException;
 import akendo.identityservice.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,20 +15,19 @@ public class UserService {
 
     public User create(String email, String password) {
         if(userRepository.existsByEmail(email)) {
-            throw new UserNotFoundException(email);
+            throw new UserAlreadyExistsException(email);
         }
 
         User user =  User.create(email, password);
 
-        return user;
+        return userRepository.save(user);
     }
 
     public User findByEmail(String email){
-        User user = userRepository.findByEmail(email)
+        return userRepository.findByEmail(email)
                 .orElseThrow(
                         () -> new UserNotFoundException(email));
 
-        return user;
     }
 
     public boolean existsByEmail(String email) {

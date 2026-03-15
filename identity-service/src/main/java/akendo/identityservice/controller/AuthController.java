@@ -1,10 +1,6 @@
 package akendo.identityservice.controller;
 
-import akendo.identityservice.dto.AuthResponse;
-import akendo.identityservice.dto.LoginRequest;
-import akendo.identityservice.dto.RegisterRequest;
-import akendo.identityservice.dto.LogoutRequest;
-import akendo.identityservice.dto.LogoutResponse;
+import akendo.identityservice.dto.*;
 import akendo.identityservice.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -27,18 +23,18 @@ public class AuthController {
     @PostMapping("/login")
     public AuthResponse login(@RequestBody LoginRequest request) {
         return authService.login(
-                request.getEmail(),
-                request.getPassword()
+                request.email(),
+                request.password()
         );
     }
 
     @PostMapping("/refresh")
-    public AuthResponse refresh(@RequestParam String refreshToken) {
-        return authService.refresh(refreshToken);
+    public AuthResponse refresh(@RequestBody RefreshRequest request) {
+        return authService.refresh(request.refreshToken());
     }
 
     @PostMapping("/logout")
     public LogoutResponse logout(@RequestBody LogoutRequest request) {
-        return authService.logout(request.getRefreshToken());
+        return authService.logout(request.refreshToken());
     }
 }
