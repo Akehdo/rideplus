@@ -1,0 +1,41 @@
+version: "3.9"
+
+services:
+
+  identity-db:
+    image: postgres:16
+    container_name: identity-db
+    environment:
+      POSTGRES_DB: identity
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+
+  order-db:
+    image: postgres:16
+    container_name: order-db
+    environment:
+      POSTGRES_DB: orders
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5434:5432"
+
+  identity-service:
+    build: ./identity-service
+    ports:
+      - "8081:8081"
+    depends_on:
+      - identity-db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://identity-db:5432/identity
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+
+  gateway-service:
+    build: ./gateway-service
+    ports:
+      - "8080:8080"
+    depends_on:
+      - identity-service
