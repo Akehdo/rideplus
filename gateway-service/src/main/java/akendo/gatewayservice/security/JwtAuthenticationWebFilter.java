@@ -26,7 +26,14 @@ public class JwtAuthenticationWebFilter implements WebFilter {
 
         String path = exchange.getRequest().getURI().getPath();
 
-        if(path.startsWith("/auth")){
+        List<String> publicPaths = List.of(
+                "/auth/login",
+                "/auth/register",
+                "/auth/refresh",
+                "/auth/logout"
+        );
+
+        if (publicPaths.contains(path)) {
             return chain.filter(exchange);
         }
 
@@ -41,13 +48,24 @@ public class JwtAuthenticationWebFilter implements WebFilter {
         return Mono.fromCallable(() ->
             jwtService.getUserIdFromToken(token))
                 .flatMap(userId -> {
-                    var auth = new UsernamePasswordAuthenticationToken(
+
+                    ServerWebExchange mutatedExchange = exchange.mutate()
+                            .request(builder -> builder
+                                    .headers(headers -> {
+                                        headers.remove("X-User-Id");
+                                        headers.add("X-User-Id", userId);
+                                    })
+                            )
+                            .build();
+
+
+                    Authentication auth = new UsernamePasswordAuthenticationToken(
                             userId,
                             token,
                             List.of()
                     );
 
-                    return chain.filter(exchange)
+                    return chain.filter(mutatedExchange)
                             .contextWrite(ReactiveSecurityContextHolder.withAuthentication(auth)
                             );
                 })
