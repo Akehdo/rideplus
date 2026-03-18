@@ -12,11 +12,11 @@ services:
     ports:
       - "5433:5432"
 
-  order-db:
+  passengers-db:
     image: postgres:16
-    container_name: order-db
+    container_name: passengers-db
     environment:
-      POSTGRES_DB: orders
+      POSTGRES_DB: passengers
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
@@ -30,6 +30,17 @@ services:
       - identity-db
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://identity-db:5432/identity
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+
+  passengers-service:
+    build: ./passenger-service
+    ports:
+      - "8082:8082"
+    depends_on:
+      - passengers-db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://passengers-db:5432/passengers
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
 
