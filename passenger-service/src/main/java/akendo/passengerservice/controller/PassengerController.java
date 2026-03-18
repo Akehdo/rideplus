@@ -2,6 +2,7 @@ package akendo.passengerservice.controller;
 import akendo.passengerservice.domain.Passenger;
 import akendo.passengerservice.dto.CreatePassengerRequest;
 import akendo.passengerservice.service.PassengerService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,7 +17,7 @@ public class PassengerController {
     @PostMapping("/create")
     public Passenger create(
             @RequestHeader("X-User-Id") UUID userId,
-            @RequestBody CreatePassengerRequest request) {
+            @Valid @RequestBody CreatePassengerRequest request) {
         return passengerService.create(
                 userId,
                 request.firstName(),
