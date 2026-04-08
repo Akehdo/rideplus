@@ -24,7 +24,8 @@ public class SecurityConfig {
                                 "/auth/login",
                                 "/auth/register",
                                 "/auth/refresh",
-                                "/auth/logout"
+                                "/auth/logout",
+                                "/actuator/**"
                         ).permitAll()
                         .anyExchange().authenticated()
                 )

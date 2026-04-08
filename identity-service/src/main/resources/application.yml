@@ -16,3 +16,9 @@ jwt:
   refresh-secret: refresh-secret-refresh-secret-123456
   access-expiration: 3600
   refresh-expiration: 604800
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus
