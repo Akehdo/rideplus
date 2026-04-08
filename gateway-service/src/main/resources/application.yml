@@ -13,6 +13,11 @@ spring:
           predicates:
             - Path=/auth/**
 
+        - id: passengers-service
+          uri: http://passengers-service:8082
+          predicates:
+            - Path=/passengers/**
+
 jwt:
   access-secret: access-secret-access-secret-123456
   access-expiration: 3600
