@@ -1,0 +1,11 @@
+groups:
+  - name: basic-alerts
+    rules:
+      - alert: ServiceDown
+        expr: up{job=~"gateway-service|identity-service|passengers-service"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "A RidePlus service is down"
+          description: "Service {{ $labels.job }} has been unavailable for more than 1 minute."
