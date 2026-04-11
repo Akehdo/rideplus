@@ -1,6 +1,5 @@
 package akendo.identityservice.service;
 
-import akendo.identityservice.repository.UserRepository;
 import akendo.identityservice.security.JwtProperties;
 import akendo.identityservice.domain.RefreshToken;
 import akendo.identityservice.domain.User;

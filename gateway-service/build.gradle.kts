@@ -26,8 +26,7 @@ dependencies {
     implementation("org.springframework.cloud:spring-cloud-starter-gateway")
     implementation("org.springframework.cloud:spring-cloud-starter-loadbalancer")
 
-    implementation ("org.springframework.boot:spring-boot-starter-actuator")
-    implementation ("io.micrometer:micrometer-registry-prometheus")
+    implementation(project(":observability-starter"))
 
     implementation("io.jsonwebtoken:jjwt-api:0.12.5")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
