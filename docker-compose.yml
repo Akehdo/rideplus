@@ -29,6 +29,7 @@ services:
     depends_on:
       - identity-db
     environment:
+      SPRING_PROFILES_ACTIVE: seed
       SPRING_DATASOURCE_URL: jdbc:postgresql://identity-db:5432/identity
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
