@@ -19,6 +19,18 @@ import java.util.List;
 @RequiredArgsConstructor
 public class JwtAuthenticationWebFilter implements WebFilter {
 
+    private static final List<String> PUBLIC_PATHS = List.of(
+            "/",
+            "/index.html",
+            "/styles.css",
+            "/app.js",
+            "/favicon.ico",
+            "/auth/login",
+            "/auth/register",
+            "/auth/refresh",
+            "/auth/logout"
+    );
+
     private  final JwtService jwtService;
 
     @Override
@@ -26,14 +38,7 @@ public class JwtAuthenticationWebFilter implements WebFilter {
 
         String path = exchange.getRequest().getURI().getPath();
 
-        List<String> publicPaths = List.of(
-                "/auth/login",
-                "/auth/register",
-                "/auth/refresh",
-                "/auth/logout"
-        );
-
-        if (path.startsWith("/actuator") || publicPaths.contains(path)) {
+        if (path.startsWith("/actuator") || PUBLIC_PATHS.contains(path)) {
             return chain.filter(exchange);
         }
 

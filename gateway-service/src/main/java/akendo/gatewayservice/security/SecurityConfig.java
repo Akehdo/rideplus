@@ -21,6 +21,11 @@ public class SecurityConfig {
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                 .authorizeExchange(exchange -> exchange
                         .pathMatchers(
+                                "/",
+                                "/index.html",
+                                "/styles.css",
+                                "/app.js",
+                                "/favicon.ico",
                                 "/auth/login",
                                 "/auth/register",
                                 "/auth/refresh",
