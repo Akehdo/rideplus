@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RidePlus Control Panel</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<div class="page-glow page-glow-left"></div>
+<div class="page-glow page-glow-right"></div>
+
+<main class="layout">
+    <section class="hero-panel">
+        <p class="eyebrow">RidePlus Microservices</p>
+        <h1>Frontend served by nginx, API served by your Java gateway.</h1>
+        <p class="hero-copy">
+            This page works with your real endpoints:
+            register, login, refresh/logout, and passenger profile creation.
+        </p>
+
+        <div class="hero-grid">
+            <article class="glass-card stat-card">
+                <span class="stat-label">Frontend</span>
+                <strong id="gateway-url">http://localhost:8088</strong>
+                <p>Static files are served by nginx, while API calls are proxied to the gateway.</p>
+            </article>
+            <article class="glass-card stat-card">
+                <span class="stat-label">Auth</span>
+                <strong>POST /auth/*</strong>
+                <p>Register, login, refresh, and logout through identity-service.</p>
+            </article>
+            <article class="glass-card stat-card">
+                <span class="stat-label">Passenger</span>
+                <strong>POST /passengers</strong>
+                <p>Create a passenger profile with JWT passed through the gateway filter.</p>
+            </article>
+        </div>
+
+        <section class="glass-card status-card">
+            <div class="status-head">
+                <div>
+                    <p class="mini-label">Session State</p>
+                    <h2 id="session-title">Not signed in</h2>
+                </div>
+                <span id="session-badge" class="badge badge-idle">offline</span>
+            </div>
+
+            <div class="session-grid">
+                <div>
+                    <p class="mini-label">User ID</p>
+                    <p id="user-id" class="session-value">Will appear after login</p>
+                </div>
+                <div>
+                    <p class="mini-label">Access token</p>
+                    <p id="access-token-preview" class="session-value">No token yet</p>
+                </div>
+                <div>
+                    <p class="mini-label">Access token expiry</p>
+                    <p id="token-expiry" class="session-value">No data</p>
+                </div>
+                <div>
+                    <p class="mini-label">Passenger profile</p>
+                    <p id="passenger-preview" class="session-value">Not created yet</p>
+                </div>
+            </div>
+        </section>
+    </section>
+
+    <section class="control-panel">
+        <article class="glass-card auth-card">
+            <div class="tabs">
+                <button class="tab-button active" data-auth-mode="login" type="button">Login</button>
+                <button class="tab-button" data-auth-mode="register" type="button">Register</button>
+            </div>
+
+            <form id="auth-form" class="form-stack">
+                <label class="field">
+                    <span>Email</span>
+                    <input id="email" name="email" type="email" placeholder="name@rideplus.dev" required>
+                </label>
+
+                <label class="field">
+                    <span>Password</span>
+                    <input id="password" name="password" type="password" minlength="6" placeholder="At least 6 characters" required>
+                </label>
+
+                <button id="auth-submit" class="primary-button" type="submit">Login</button>
+            </form>
+
+            <p class="hint-text" id="auth-hint">
+                This form uses your real `POST /auth/register` and `POST /auth/login` endpoints.
+            </p>
+        </article>
+
+        <article class="glass-card action-card">
+            <div class="card-heading">
+                <div>
+                    <p class="mini-label">Passenger Setup</p>
+                    <h2>Create passenger profile</h2>
+                </div>
+                <span id="passenger-lock" class="badge badge-idle">JWT required</span>
+            </div>
+
+            <form id="passenger-form" class="form-stack">
+                <label class="field">
+                    <span>First name</span>
+                    <input id="first-name" name="firstName" type="text" placeholder="Aruzhan" required>
+                </label>
+
+                <label class="field">
+                    <span>Last name</span>
+                    <input id="last-name" name="lastName" type="text" placeholder="Sadykova" required>
+                </label>
+
+                <button id="passenger-submit" class="secondary-button" type="submit">Create passenger</button>
+            </form>
+        </article>
+
+        <article class="glass-card action-card">
+            <div class="card-heading">
+                <div>
+                    <p class="mini-label">Token Actions</p>
+                    <h2>Session controls</h2>
+                </div>
+            </div>
+
+            <div class="button-row">
+                <button id="refresh-button" class="ghost-button" type="button">Refresh access</button>
+                <button id="logout-button" class="ghost-button danger-button" type="button">Logout</button>
+            </div>
+
+            <div id="message-box" class="message-box" aria-live="polite">
+                Ready to go. Start your services and begin with register or login.
+            </div>
+        </article>
+
+        <article class="glass-card feed-card">
+            <div class="card-heading">
+                <div>
+                    <p class="mini-label">Activity Feed</p>
+                    <h2>What the frontend does</h2>
+                </div>
+            </div>
+
+            <ul id="event-feed" class="event-feed">
+                <li>The interface is ready and waiting for user actions.</li>
+            </ul>
+        </article>
+    </section>
+</main>
+
+<script src="/app.js" defer></script>
+</body>
+</html>
+
