@@ -7,11 +7,11 @@ services:
     ports:
       - "8088:80"
     depends_on:
-      - gateway-service
-    deploy:
-      replicas: 1
+      gateway-service:
+        condition: service_started
+    restart: unless-stopped
 
-  identity-db:
+  identity-db-primary:
     image: postgres:16
     environment:
       POSTGRES_DB: identity
@@ -19,13 +19,40 @@ services:
       POSTGRES_PASSWORD: postgres
     ports:
       - "5433:5432"
+    volumes:
+      - identity-primary-data:/var/lib/postgresql/data
+      - ./postgres/identity-primary/init:/docker-entrypoint-initdb.d:ro
+      - ./postgres/identity-primary/postgresql.conf:/etc/postgresql/postgresql.conf:ro
+      - ./postgres/identity-primary/pg_hba.conf:/etc/postgresql/pg_hba.conf:ro
+    command:
+      - postgres
+      - -c
+      - config_file=/etc/postgresql/postgresql.conf
+      - -c
+      - hba_file=/etc/postgresql/pg_hba.conf
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d identity"]
       interval: 10s
       timeout: 5s
       retries: 10
-    deploy:
-      replicas: 1
+    restart: unless-stopped
+
+  identity-db-replica:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      PGDATA: /var/lib/postgresql/data
+    ports:
+      - "5435:5432"
+    depends_on:
+      identity-db-primary:
+        condition: service_healthy
+    volumes:
+      - identity-replica-data:/var/lib/postgresql/data
+      - ./postgres/identity-replica/replica-entrypoint.sh:/replica-entrypoint.sh:ro
+    entrypoint: ["sh", "/replica-entrypoint.sh"]
+    restart: unless-stopped
 
   passengers-db:
     image: postgres:16
@@ -35,13 +62,14 @@ services:
       POSTGRES_PASSWORD: postgres
     ports:
       - "5434:5432"
+    volumes:
+      - passengers-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d passengers"]
       interval: 10s
       timeout: 5s
       retries: 10
-    deploy:
-      replicas: 1
+    restart: unless-stopped
 
   identity-service:
     image: rideplus/identity-service:local
@@ -51,16 +79,14 @@ services:
     ports:
       - "8081:8081"
     depends_on:
-      - identity-db
+      identity-db-primary:
+        condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: seed
-      SPRING_DATASOURCE_URL: jdbc:postgresql://identity-db:5432/identity
+      SPRING_DATASOURCE_URL: jdbc:postgresql://identity-db-primary:5432/identity
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: any
+    restart: unless-stopped
 
   passengers-service:
     image: rideplus/passenger-service:local
@@ -70,15 +96,13 @@ services:
     ports:
       - "8082:8082"
     depends_on:
-      - passengers-db
+      passengers-db:
+        condition: service_healthy
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://passengers-db:5432/passengers
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: any
+    restart: unless-stopped
 
   gateway-service:
     image: rideplus/gateway-service:local
@@ -88,12 +112,11 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - identity-service
-      - passengers-service
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: any
+      identity-service:
+        condition: service_started
+      passengers-service:
+        condition: service_started
+    restart: unless-stopped
 
   prometheus:
     image: prom/prometheus:latest
@@ -102,29 +125,35 @@ services:
     volumes:
       - ./monitoring/prometheus:/etc/prometheus:ro
     depends_on:
-      - gateway-service
-      - identity-service
-      - passengers-service
-    deploy:
-      replicas: 1
+      gateway-service:
+        condition: service_started
+      identity-service:
+        condition: service_started
+      passengers-service:
+        condition: service_started
+      node-exporter:
+        condition: service_started
+    restart: unless-stopped
 
   grafana:
     image: grafana/grafana:latest
     ports:
       - "3000:3000"
-    depends_on:
-      - prometheus
     volumes:
       - grafana-data:/var/lib/grafana
-    deploy:
-      replicas: 1
+    depends_on:
+      prometheus:
+        condition: service_started
+    restart: unless-stopped
 
   node-exporter:
     image: prom/node-exporter:latest
     ports:
       - "9100:9100"
-    deploy:
-      mode: global
+    restart: unless-stopped
 
 volumes:
   grafana-data:
+  identity-primary-data:
+  identity-replica-data:
+  passengers-data:
