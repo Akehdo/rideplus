@@ -1,29 +1,53 @@
-version: "3.9"
-
 services:
+  frontend:
+    image: rideplus/frontend:local
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    ports:
+      - "8088:80"
+    depends_on:
+      - gateway-service
+    deploy:
+      replicas: 1
 
   identity-db:
     image: postgres:16
-    container_name: identity-db
     environment:
       POSTGRES_DB: identity
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
       - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d identity"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    deploy:
+      replicas: 1
 
   passengers-db:
     image: postgres:16
-    container_name: passengers-db
     environment:
       POSTGRES_DB: passengers
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
       - "5434:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d passengers"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    deploy:
+      replicas: 1
 
   identity-service:
-    build: ./identity-service
+    image: rideplus/identity-service:local
+    build:
+      context: .
+      dockerfile: identity-service/Dockerfile
     ports:
       - "8081:8081"
     depends_on:
@@ -33,9 +57,16 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://identity-db:5432/identity
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
 
   passengers-service:
-    build: ./passenger-service
+    image: rideplus/passenger-service:local
+    build:
+      context: .
+      dockerfile: passenger-service/Dockerfile
     ports:
       - "8082:8082"
     depends_on:
@@ -44,42 +75,56 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://passengers-db:5432/passengers
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
 
   gateway-service:
-    build: ./gateway-service
+    image: rideplus/gateway-service:local
+    build:
+      context: .
+      dockerfile: gateway-service/Dockerfile
     ports:
       - "8080:8080"
     depends_on:
       - identity-service
+      - passengers-service
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
 
   prometheus:
     image: prom/prometheus:latest
-    container_name: prometheus
     ports:
       - "9090:9090"
     volumes:
-      - ./monitoring/prometheus:/etc/prometheus
+      - ./monitoring/prometheus:/etc/prometheus:ro
     depends_on:
       - gateway-service
       - identity-service
       - passengers-service
+    deploy:
+      replicas: 1
 
   grafana:
     image: grafana/grafana:latest
-    container_name: grafana
     ports:
       - "3000:3000"
     depends_on:
       - prometheus
     volumes:
       - grafana-data:/var/lib/grafana
+    deploy:
+      replicas: 1
 
   node-exporter:
     image: prom/node-exporter:latest
-    container_name: node-exporter
     ports:
       - "9100:9100"
-
+    deploy:
+      mode: global
 
 volumes:
   grafana-data:
