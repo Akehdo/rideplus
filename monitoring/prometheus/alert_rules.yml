@@ -9,3 +9,12 @@ groups:
         annotations:
           summary: "A RidePlus service is down"
           description: "Service {{ $labels.job }} has been unavailable for more than 1 minute."
+
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 80
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Node memory usage is high"
+          description: "Instance {{ $labels.instance }} memory usage has been above 80% for more than 2 minutes."
