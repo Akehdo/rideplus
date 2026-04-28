@@ -1,0 +1,28 @@
+- hosts: server
+  become: yes
+
+  tasks:
+
+    - name: Install Docker + Git
+      apt:
+        name:
+          - docker.io
+          - docker-compose
+          - git
+        update_cache: yes
+
+    - name: Start Docker
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Clone project
+      git:
+        repo: https://github.com/Akehdo/rideplus.git
+        dest: /rideplus
+
+    - name: Run docker compose
+      command: docker-compose up -d --buil
+      args:
+        chdir: /rideplus
